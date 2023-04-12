@@ -1,0 +1,131 @@
+{% extends "../store/base.html" %}
+{% load static %}
+{% block title %} Basket Summary {% endblock %}
+{% block content %}
+<main class="pt-5">
+    <div class="container">
+        <h1 class="h5">Shopping Basket</h1>
+        {% for item in basket %}
+        {% with product=item.product %}
+        <div data-index="{{product.id}}" class="row mb-4 border product-item">
+            <div class="col-md-5 col-lg-5 order-md-first bg-light">
+                <img class="img-fluid mx-auto d-block" width="200px" alt="Responsive image" src="{{ product.image.url }}">
+            </div>
+            <div class="col-md-7 col-lg-7 ps-md-3 ps-lg-5">
+                <h1 class="md-0 h4">{{ product.title }}</h1>
+                <p>{{ product.description|slice:":355" }}...</p>
+                <div class="col border-bottom">
+                    <div class="row p-3">
+                        <div class="col-6">Cost</div>
+                        <div class="col-6 text-end"><span class="h4 fw-bold">Rs. {{ product.price }}</span></div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="row p-3">
+                        <div class="col-6">
+                            <label for="select">Qty</label>
+                            <select id="select{{product.id}}">
+                               <option selected>
+                                    {{item.qty}}
+                                </option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+
+                            </select>
+                        </div>
+                        <div class=" col-6 text-end">
+                            <button type="button" id="update-button" data-index="{{product.id}}" class="btn btn-secondary btn-sm update-button">Update</button>
+                            <button type="button" id="delete-button" data-index="{{product.id}}" class="btn btn-secondary btn-sm delete-button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+        <div class="d-flex d-flex-inline">
+          <div class="dropdown">
+          <a class="text-reset text-decoration-none dropdown-toggle" href="#" role="link" id="dropdownLink" data-bs-toggle="dropdown" aria-expanded="false">
+          Shipping options
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="dropdownLink">
+            <li class="item small">Next day delivery</li>
+            <li class="item small">Premimum delivery</li>
+          </ul>
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="">Sub Total: <span class="fw-bold">Rs.</span><div id="subtotal" class="d-inline-flex fw-bold">{{basket.get_subtotal_price}}</div></div>
+          <div id="">Shipping <span class="small">(Next day delivery)</span>: <span class="fw-bold">Rs.11.50</span></div>
+          <div class="pt-2">Total to pay: <span class="fw-bold h5">Rs.</span><span id="total" class="fw-bold h5">{{basket.get_total_price}}</span></div>
+        </div>
+    <div class="col-md-5 col-lg-4 order-md-last p-0 order-3">
+        <div class="d-grid gap-2">
+          <a role="button" href="{% url "pay:basket" %}" class="btn btn-success fw-bold" type="button">Checkout</a>
+          <button class="btn btn-light " type="button">Save for later</button>
+        </div>
+      </div>
+</main>
+
+
+<script>
+    //delete item
+    $(document).on('click', '.delete-button', function (e) {
+    e.preventDefault();
+    var prodid = $(this).data('index');
+    $.ajax({
+    type: 'POST',
+    url: '{% url "basket:basket_delete" %}',
+    data: {
+    productid: $(this).data('index'),
+    csrfmiddlewaretoken: "{{csrf_token}}",
+    action: 'post'
+    },
+    success: function (json){
+    $('.product-item[data-index="'+ prodid +'"]').remove();
+    if(json.qty == 0){
+            total = 0
+            subtotal = 0
+          }
+          else{
+            total = (parseFloat(json.subtotal) + 11.50).toFixed(2);
+            subtotal = json.subtotal
+          }
+
+    document.getElementById("subtotal").innerHTML = json.subtotal;
+    document.getElementById("basket-qty").innerHTML = json.qty
+    document.getElementById("total").innerHTML = total
+    },
+    error: function(xhr, errmsg, err){}
+    });
+    })
+
+    // update item
+
+    $(document).on('click', '.update-button', function (e) {
+    e.preventDefault();
+    var prodid = $(this).data('index');
+    $.ajax({
+      type: 'POST',
+      url: '{% url "basket:basket_update" %}',
+      data: {
+        productid: $(this).data('index'),
+        productqty: $('#select' + prodid + ' option:selected').text(),
+        csrfmiddlewaretoken: "{{csrf_token}}",
+        action: 'post'
+      },
+      success: function (json) {
+        total = (parseFloat(json.subtotal) + 11.50).toFixed(2);
+        document.getElementById("basket-qty").innerHTML = json.qty
+        document.getElementById("subtotal").innerHTML = json.subtotal
+        document.getElementById("total").innerHTML = total
+      },
+      error: function (xhr, errmsg, err) {}
+    });
+  })
+</script>
+
+{% endblock %}
