@@ -4,6 +4,10 @@
 A Ecommerce website which was made using Django Framework
 
 
+# Brief
+
+In this project we add products and categories in backend and shows to the coustemer in frontend and when coustermer places a successful order with a proper payment then the order recives in the backend. To place an order first user needs to create an account and need to be loged in while placing an order
+
 ## Authors
 
 - [@allenkiakshay](https://www.github.com/allenkiakshay)
