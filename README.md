@@ -23,6 +23,18 @@ Go to the project directory
   cd my-project
 ```
 
+Install virtual envirornmen
+
+```bash
+  py -m -venv env
+```
+
+Install Django Framework
+
+```bash
+  py -m pip install Django
+```
+
 Install dependencies
 
 ```bash
